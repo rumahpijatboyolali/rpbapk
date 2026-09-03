@@ -21,32 +21,42 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: "17"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK
+      - name: Install Android SDK 35
         run: |
-          sdkmanager "platform-tools" \
+          sdkmanager \
+          "platform-tools" \
           "platforms;android-35" \
           "build-tools;35.0.0"
 
-      - name: Grant Gradle Permission
-        run: chmod +x gradlew
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Check Project
+        run: |
+          echo "=== FILE LIST ==="
+          ls -la
+          echo "=== APP FOLDER ==="
+          ls -la app || true
 
       - name: Build Release APK
         run: |
-          ./gradlew clean
-          ./gradlew assembleRelease --stacktrace --no-daemon
+          gradle clean
+          gradle :app:assembleRelease --stacktrace --no-daemon
 
-      - name: Check APK Output
+      - name: Check APK Result
         run: |
-          echo "=== APK LIST ==="
+          echo "=== APK OUTPUT ==="
           ls -lh app/build/outputs/apk/release/
           file app/build/outputs/apk/release/*.apk
 
-      - name: Rename APK
+      - name: Prepare APK
         run: |
           mkdir -p output
           cp app/build/outputs/apk/release/*-release*.apk \
