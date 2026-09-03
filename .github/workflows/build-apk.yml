@@ -36,7 +36,8 @@ jobs:
 
       - name: Build APK
   run: |
-    chmod +x gradlew
+    
+  chmod +x gradlew
     ./gradlew :app:assembleRelease --no-daemon
 
       - name: Upload APK
