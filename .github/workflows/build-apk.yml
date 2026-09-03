@@ -3,7 +3,8 @@ name: Build APK Rumah Pijat Boyolali
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
   build:
@@ -13,36 +14,47 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: 17
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK 35
+      - name: Install Android SDK
         run: |
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager "platform-tools" \
+          "platforms;android-35" \
+          "build-tools;35.0.0"
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.9"
+      - name: Grant Gradle Permission
+        run: chmod +x gradlew
 
-      - name: Build APK
-  run: |
-    
-  chmod +x gradlew
-    ./gradlew :app:assembleRelease --no-daemon
+      - name: Build Release APK
+        run: |
+          ./gradlew clean
+          ./gradlew assembleRelease --stacktrace --no-daemon
+
+      - name: Check APK Output
+        run: |
+          echo "=== APK LIST ==="
+          ls -lh app/build/outputs/apk/release/
+          file app/build/outputs/apk/release/*.apk
+
+      - name: Rename APK
+        run: |
+          mkdir -p output
+          cp app/build/outputs/apk/release/*-release*.apk \
+          output/Rumah-Pijat-Boyolali.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: RumahPijatBoyolali-APK
-          path: app/build/outputs/apk/release/*-release*.apk
+          name: Rumah-Pijat-Boyolali-APK
+          path: output/Rumah-Pijat-Boyolali.apk
           if-no-files-found: error
