@@ -10,9 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -21,50 +18,27 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: 17
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK 35
+      - name: Install SDK
         run: |
-          sdkmanager \
-          "platform-tools" \
-          "platforms;android-35" \
-          "build-tools;35.0.0"
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Setup Gradle 8.9
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.9"
+          gradle-version: 8.9
 
-      - name: Check Project
-        run: |
-          echo "=== FILE LIST ==="
-          ls -la
-          echo "=== APP FOLDER ==="
-          ls -la app || true
-
-      - name: Build Release APK
+      - name: Build APK
         run: |
           gradle clean
-          gradle :app:assembleRelease --stacktrace --no-daemon
-
-      - name: Check APK Result
-        run: |
-          echo "=== APK OUTPUT ==="
-          ls -lh app/build/outputs/apk/release/
-          file app/build/outputs/apk/release/*.apk
-
-      - name: Prepare APK
-        run: |
-          mkdir -p output
-          cp app/build/outputs/apk/release/*-release*.apk \
-          output/Rumah-Pijat-Boyolali.apk
+          gradle :app:assembleRelease --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Rumah-Pijat-Boyolali-APK
-          path: output/Rumah-Pijat-Boyolali.apk
-          if-no-files-found: error
+          path: app/build/outputs/apk/release/*.apk
